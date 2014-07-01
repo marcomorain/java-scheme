@@ -1,6 +1,5 @@
 package com.marcomorain.scheme;
 
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -122,7 +121,7 @@ public class App {
             builder.appendCodePoint(c);
 
             for (;;) {
-                c = input.read();
+                c = peek();
 
                 if (isDelimeter(c)) {
                     break;
@@ -130,6 +129,7 @@ public class App {
                 if (!isSubsequent(c)) {
                     throw new IOException("malformed identifier");
                 }
+                input.read();
                 builder.appendCodePoint(c);
             }
         } else if (isPeculiarIdentifier(c)) {
