@@ -1,21 +1,11 @@
 package com.marcomorain.scheme;
 
-import com.marcomorain.scheme.Tokeniser.Token;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Tokeniser implements Iterable<Token> {
-
-    public static enum Token {
-
-        LEFT_PAREN,
-        RIGHT_PAREN,
-        NUMBER,
-        IDENTIFIER,
-        END_OF_INPUT
-    }
 
     private final Reader input;
 
@@ -108,7 +98,7 @@ public class Tokeniser implements Iterable<Token> {
             result += Character.getNumericValue(next);
         }
         System.out.format("Read number %f%n", result);
-        return Token.NUMBER;
+        return Token.number(result);
     }
 
     private void skipWhiteSpace() throws IOException {
@@ -146,8 +136,8 @@ public class Tokeniser implements Iterable<Token> {
             throw new IOException("malformed identifier");
         }
 
-        System.out.format("Read identifier: '%s'", builder.toString());
-        return Token.IDENTIFIER;
+        System.out.format("Read identifier: '%s'%n", builder.toString());
+        return Token.identifier(builder.toString());
     }
 
     public Token parseToken() throws IOException {
@@ -155,13 +145,43 @@ public class Tokeniser implements Iterable<Token> {
         final int c = peek();
         switch (c) {
             case -1:
-                return Token.END_OF_INPUT;
+                return new Token(Token.Type.END_OF_INPUT);
             case '(':
                 input.read();
-                return Token.LEFT_PAREN;
+                return new Token(Token.Type.LEFT_PAREN);
             case ')':
                 input.read();
-                return Token.RIGHT_PAREN;
+                return new Token(Token.Type.RIGHT_PAREN);
+            case '\'':
+                input.read();
+                return new Token(Token.Type.QUOTE);
+            case '`':
+                input.read();
+                return new Token(Token.Type.BACKTICK);
+            case '.':
+                input.read();
+                return new Token(Token.Type.DOT);
+            case ',':
+                input.read();
+                if (peek() == '@') {
+                    input.read();
+                    return new Token(Token.Type.COMMA_AT);
+                } else {
+                    return new Token(Token.Type.COMMA);
+                }
+            case '#':
+                input.read();
+                switch (peek()) {
+                    case 't':
+                        input.read();
+                        return new Token(Token.Type.TRUE);
+                    case 'f':
+                        input.read();
+                        return new Token(Token.Type.FALSE);
+                    default:
+                        throw new IOException("space newline or character");
+                }
+
             default:
                 if (Character.isDigit(c)) {
                     input.read();
@@ -191,7 +211,7 @@ public class Tokeniser implements Iterable<Token> {
 
         @Override
         public boolean hasNext() {
-            return next != Token.END_OF_INPUT;
+            return next.type != Token.Type.END_OF_INPUT;
         }
 
         @Override
