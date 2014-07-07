@@ -6,4 +6,14 @@ public class Symbol extends Cell {
     public Symbol(String symbol) {
         this.symbol = symbol;
     }
+    
+    @Override
+    public Cell eval(Environment environment) {
+        return environment.load(symbol);
+    }
+    
+    @Override
+    public String toString() {
+        return symbol;
+    }
 }
