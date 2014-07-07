@@ -14,7 +14,7 @@ class RuntimeEnvironment implements Environment {
     }
 
     @Override
-    public Cell load(String symbol) {
+    public Cell load(String symbol) throws EvaluationException {
         if (env.containsKey(symbol)) {
             return env.get(symbol);
         }
