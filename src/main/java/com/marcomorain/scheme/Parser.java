@@ -1,5 +1,7 @@
 package com.marcomorain.scheme;
 
+import java.io.IOException;
+
 public class Parser {
 
     private final Tokeniser tokeniser;
@@ -8,11 +10,15 @@ public class Parser {
         this.tokeniser = tokeniser;
     }
 
-    public Cell read() throws Exception {
+    public Cell read() throws ParseException, IOException {
         return datum(tokeniser.parseToken());
     }
 
-    private Cell datum(Token token) throws Exception {
+    private Cell datum(Token token) throws ParseException, IOException {
+
+        if (token.type == Token.Type.END_OF_INPUT) {
+            throw new ParseException(String.format("End of input"), tokeniser.line(), tokeniser.column());
+        }
 
         Cell simple = simpleDatum(token);
 
@@ -25,7 +31,8 @@ public class Parser {
         if (compound != null) {
             return compound;
         }
-        throw new Exception();
+
+        throw new ParseException(String.format("Unexpected token %s", token), tokeniser.line(), tokeniser.column());
     }
 
     private Cell simpleDatum(Token token) {
@@ -44,7 +51,7 @@ public class Parser {
         return null;
     }
 
-    private Cell compoundDatum(Token token) throws Exception {
+    private Cell compoundDatum(Token token) throws ParseException, IOException {
         final Cell list = list(token);
         if (list != null) {
             return list;
@@ -56,15 +63,15 @@ public class Parser {
         return null;
     }
 
-    private Cell list(Token token) throws Exception {
+    private Cell list(Token token) throws ParseException, IOException {
         if (token.type != Token.Type.LEFT_PAREN) {
             return null;
         }
         return listTail(tokeniser.parseToken());
     }
 
-    private Cell listTail(Token token) throws Exception {
-        switch(token.type) {
+    private Cell listTail(Token token) throws ParseException, IOException {
+        switch (token.type) {
             case RIGHT_PAREN:
                 return Cell.EMPTY_LIST;
             // TODO: case DOT

@@ -1,9 +1,12 @@
 package com.marcomorain.scheme;
 
 // TODO: non-public
+import com.google.common.base.Objects;
+
 public class Token {
 
     public enum Type {
+
         LEFT_PAREN,
         RIGHT_PAREN,
         QUOTE,
@@ -36,5 +39,14 @@ public class Token {
         Token result = new Token(Token.Type.IDENTIFIER);
         result.identifier = i;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("type", type)
+                .add("number", number)
+                .add("identifier", identifier)
+                .toString();
     }
 }

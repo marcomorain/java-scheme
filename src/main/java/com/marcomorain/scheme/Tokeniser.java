@@ -7,10 +7,10 @@ import java.util.NoSuchElementException;
 
 public class Tokeniser implements Iterable<Token> {
 
-    private final Reader input;
+    private final LineTracker input;
 
     public Tokeniser(Reader input) {
-        this.input = input;
+        this.input = new LineTracker(input);
     }
 
     public static boolean isSpecialSubsequent(int c) {
@@ -75,25 +75,17 @@ public class Tokeniser implements Iterable<Token> {
         return Character.isAlphabetic(c) || isSpecialInitial(c);
     }
 
-    private int peek() throws IOException {
-        input.mark(1);
-        final int result = input.read();
-        input.reset();
-        return result;
-    }
-
     private Token parseNumber(final int c) throws IOException {
 
         double result = Character.getNumericValue(c);
 
         for (;;) {
-            input.mark(1);
-            final int next = input.read();
+            final int next = input.peek();
 
             if (!Character.isDigit(next)) {
-                input.reset();
                 break;
             }
+            input.next();
             result *= 10;
             result += Character.getNumericValue(next);
         }
@@ -102,9 +94,9 @@ public class Tokeniser implements Iterable<Token> {
     }
 
     private void skipWhiteSpace() throws IOException {
-        while (Character.isWhitespace(peek())) {
+        while (Character.isWhitespace(input.peek())) {
             System.out.format("Skip whitespace%n");
-            input.read();
+            input.next();
         }
     }
 
@@ -112,13 +104,13 @@ public class Tokeniser implements Iterable<Token> {
 
         StringBuilder builder = new StringBuilder();
 
-        int c = input.read();
+        int c = input.next();
 
         if (isInitial(c)) {
             builder.appendCodePoint(c);
 
             for (;;) {
-                c = peek();
+                c = input.peek();
 
                 if (isDelimeter(c)) {
                     break;
@@ -126,12 +118,12 @@ public class Tokeniser implements Iterable<Token> {
                 if (!isSubsequent(c)) {
                     throw new IOException("malformed identifier");
                 }
-                input.read();
+                input.next();
                 builder.appendCodePoint(c);
             }
         } else if (isPeculiarIdentifier(c)) {
             builder.appendCodePoint(c);
-            input.read();
+            input.next();
         } else {
             throw new IOException("malformed identifier");
         }
@@ -142,41 +134,41 @@ public class Tokeniser implements Iterable<Token> {
 
     public Token parseToken() throws IOException {
         skipWhiteSpace();
-        final int c = peek();
+        final int c = input.peek();
         switch (c) {
             case -1:
                 return new Token(Token.Type.END_OF_INPUT);
             case '(':
-                input.read();
+                input.next();
                 return new Token(Token.Type.LEFT_PAREN);
             case ')':
-                input.read();
+                input.next();
                 return new Token(Token.Type.RIGHT_PAREN);
             case '\'':
-                input.read();
+                input.next();
                 return new Token(Token.Type.QUOTE);
             case '`':
-                input.read();
+                input.next();
                 return new Token(Token.Type.BACKTICK);
             case '.':
-                input.read();
+                input.next();
                 return new Token(Token.Type.DOT);
             case ',':
-                input.read();
-                if (peek() == '@') {
-                    input.read();
+                input.next();
+                if (input.peek() == '@') {
+                    input.next();
                     return new Token(Token.Type.COMMA_AT);
                 } else {
                     return new Token(Token.Type.COMMA);
                 }
             case '#':
-                input.read();
-                switch (peek()) {
+                input.next();
+                switch (input.peek()) {
                     case 't':
-                        input.read();
+                        input.next();
                         return new Token(Token.Type.TRUE);
                     case 'f':
-                        input.read();
+                        input.next();
                         return new Token(Token.Type.FALSE);
                     default:
                         throw new IOException("space newline or character");
@@ -184,7 +176,7 @@ public class Tokeniser implements Iterable<Token> {
 
             default:
                 if (Character.isDigit(c)) {
-                    input.read();
+                    input.next();
                     return parseNumber(c);
                 } else {
                     return parseIdentifier();
@@ -225,4 +217,13 @@ public class Tokeniser implements Iterable<Token> {
             }
         }
     }
+
+    public int line() {
+        return input.line();
+    }
+
+    public int column() {
+        return input.column();
+    }
+
 }

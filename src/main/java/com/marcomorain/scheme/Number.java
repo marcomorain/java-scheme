@@ -8,4 +8,14 @@ public class Number extends Cell {
     public Number(double number) {
         this.number = number;
     }
+    
+    @Override
+    public double number() {
+        return number;
+    }
+    
+    @Override
+    public String toString() {
+        return Double.toString(number);
+    }
 }
