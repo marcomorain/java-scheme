@@ -6,7 +6,10 @@ import java.io.StringReader;
 public class App {
 
     public static void main(String[] args) throws IOException {
-        Tokeniser tokeniser = new Tokeniser(new StringReader("( 1 2 3)"));
+        for (String arg : args) {
+        }
+
+        Tokeniser tokeniser = new Tokeniser(new StringReader( args[0]));
         tokeniser.parseToken();
     }
 }
