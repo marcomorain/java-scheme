@@ -30,6 +30,6 @@ public class Cell {
     }
 
     private EvaluationException no(String what) {
-        return new EvaluationException(String.format("Cannot %sa %s", what, getClass().getSimpleName()));
+        return new EvaluationException(String.format("Cannot %s a %s", what, getClass().getSimpleName()));
     }
 }

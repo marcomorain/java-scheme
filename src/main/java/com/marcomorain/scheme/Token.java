@@ -18,6 +18,7 @@ public class Token {
         IDENTIFIER,
         TRUE,
         FALSE,
+        STRING,
         END_OF_INPUT
     }
 
@@ -32,6 +33,12 @@ public class Token {
     public static Token number(double n) {
         Token result = new Token(Token.Type.NUMBER);
         result.number = n;
+        return result;
+    }
+
+    public static Token string(String i) {
+        Token result = new Token(Token.Type.STRING);
+        result.identifier = i;
         return result;
     }
 

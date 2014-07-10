@@ -1,12 +1,18 @@
 package com.marcomorain.scheme;
 
+import java.io.IOException;
 import java.io.StringReader;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TokeniserTest {
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testSum() throws Exception {
@@ -51,4 +57,18 @@ public class TokeniserTest {
         assertThat(instance.parseToken().type, equalTo(Token.Type.END_OF_INPUT));
     }
 
+    @Test
+    public void itCanParseStrings() throws Exception {
+        Tokeniser instance = new Tokeniser(new StringReader("\"one\""));
+        Token token = instance.parseToken();
+        assertThat(token.type, equalTo(Token.Type.STRING));
+        assertThat(token.identifier, equalTo("one"));
+    }
+
+    @Test
+    public void itCorrectlyIdentifiesUnterminatedStrings() throws Exception {
+        exception.expect(IOException.class);
+        exception.expectMessage("food");
+        Tokeniser instance = new Tokeniser(new StringReader("\"unterminated"));
+    }
 }

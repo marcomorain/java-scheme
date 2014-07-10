@@ -30,7 +30,6 @@ repositories {
     mavenCentral()
 }
 
-
 dependencies {
     compile group: 'com.google.guava', name: 'guava',           version: '17.0'
     compile group: 'org.json',         name: 'json',            version: '20140107'

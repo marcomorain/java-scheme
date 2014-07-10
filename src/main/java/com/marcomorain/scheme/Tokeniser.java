@@ -75,6 +75,35 @@ public class Tokeniser implements Iterable<Token> {
         return Character.isAlphabetic(c) || isSpecialInitial(c);
     }
 
+    private Token parseString() throws IOException {
+        StringBuilder builder = new StringBuilder();
+
+	for (;;)
+	{
+            final int c = input.next();
+
+            if (c == '"') {
+                input.next();
+                return Token.string(builder.toString());
+            }
+
+            if (c == '\\') {
+                final int n = input.next();
+                if (n == '"' || n == '\\') {
+                    builder.appendCodePoint(n);
+                    continue;
+                }
+                throw new IOException("Unexpected escape character");
+            }
+
+            if (Character.isISOControl(c)) {
+                throw new IOException("invalid control character in string");
+            }
+
+            builder.appendCodePoint(c);
+	}
+    }
+
     private Token parseNumber(final int c) throws IOException {
 
         double result = Character.getNumericValue(c);
@@ -161,6 +190,9 @@ public class Tokeniser implements Iterable<Token> {
                 } else {
                     return new Token(Token.Type.COMMA);
                 }
+            case '"':
+                input.next();
+                return parseString();
             case '#':
                 input.next();
                 switch (input.peek()) {
@@ -188,6 +220,7 @@ public class Tokeniser implements Iterable<Token> {
     public Iterator<Token> iterator() {
         return new TokenEnumeration();
     }
+
 
     private final class TokenEnumeration extends NoRemovalIterator<Token> {
 
